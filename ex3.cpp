@@ -4,34 +4,70 @@
 
 using namespace std;
 
-/*ОБЪЯВЛЕНИЕ ПРОТОТИПОВ*/
 double func_sum(double x);
 double func_yx(double x);
-int check_delta(double y, double sum);
-int* iteration_counter(int flag);
 double factorial(double arg);
-void input_error(void);
-int doubleOverflow_error(double digit);
-void inputOutOfRange_error();
 double digit_input();
+int check_delta(double y, double sum);
+int doubleOverflow_error(double digit);
 int stepSize_check(double step, double startNum, double endNum);
 int stepInputValidation(double step, double startNum, double endNum);
-/*КОНЕЦ ОБЪЯВЛЕНИЯ ПРОТОТИПОВ*/
+int isDoubleInt(double num);
+int stepMode(double startNum, double endNum);
+int step_check(double step, double startNum, double endNum);
+int* iteration_counter(int flag);
+void input_error(void);
+void inputOutOfRange_error();
+void printResultHeader();
+void printResult(int i, double x, double y, double eps, int count);
+
+int main()
+{
+	double x; // x
+	double y; // y
+	double startNum; // a (ПОЛУЧАЕМ ИЗ КОНСОЛИ)
+	double endNum; // b (ПОЛУЧАЕМ ИЗ КОНСОЛИ)
+	double step; // h (ПОЛУЧАЕМ ИЗ КОНСОЛИ)
+	double epsilon; // |Y(x) - S(x)|
+	double iteration;
+
+	iteration = 0;
+	step = 0;
+
+	cout << "Enter starting value: " << endl;
+	startNum = digit_input();
+	cout << "Enter final value: " << endl;
+	endNum = digit_input();
+
+	if (startNum != endNum) { // Если начало и конец равны, то шаг не нужен. Будет всего одна основная итерация
+		do {
+			cout << "Enter step size: " << endl;
+			step = fabs(digit_input()) * stepMode(startNum, endNum);
+		} while (step_check(step, startNum, endNum));
+	}
+
+	printResultHeader();
+
+	do {
+		iteration_counter(0);
+		x = func_sum(startNum);
+		y = func_yx(startNum);
+		epsilon = fabs(y - x);
+		startNum += step;
+
+		printResult((++iteration), x, y, epsilon, *iteration_counter(2));
+
+	} while (fabs(startNum - endNum - step) > 0.000000000001); // Аналогично как и в isDoubleInt(), отлов "поломанных" двоичной системой целых чисел
+
+	return (0);
+}
 
 double factorial(double arg)
 {
 	if (arg == 0)
 		return (1);
 
-	double result;
-
-	result = arg;
-
-	while (arg > 1) {
-		result *= --arg;
-	}
-
-	return (result);
+	return (arg * factorial(arg - 1));
 }
 
 double func_yx(double x)
@@ -56,7 +92,7 @@ double func_sum(double x) //TODO: добавить проверку stepsize > m
 	return (sum);
 }
 
-int* iteration_counter(int flag) //TODO: переделать через указатели
+int* iteration_counter(int flag)
 {
 	static int i;
 
@@ -68,25 +104,6 @@ int* iteration_counter(int flag) //TODO: переделать через ука�
 		return (&i);
 
 	return (0);
-	
-	/*
-	int counterValue;
-
-	if (flag == 0){ // Флаг 0 - инициализация или сброс
-		counterValue = 0;
-		return (0);
-	}
-
-	if (flag == 1) { // Флаг 1 - итерация счетчика
-		counterValue++;
-		return (0);
-	}
-
-	if (flag == 2) { // Флаг 2 - вывод текущего состояния счетчика
-		return (counterValue);
-	}
-
-	cout << "Wrong flag!" << endl; // Ошибка неверного флага */
 }
 
 int check_delta(double y, double sum)
@@ -145,27 +162,6 @@ int doubleOverflow_error(double digit)
 	return (0);
 }
 
-/*int isInteger(double value) //Проверка дабла на целочисленность. fmod не работает.
-{
-	int temp1 = value;
-	double temp2 = value - temp1;
-	temp1 = value;
-	temp2 = value - temp1;
-	if (temp2 == 0)
-		return (0);
-	return (1);
-}
-
-int stepSize_check(double step, double startNum, double endNum) //TODO: проверка на максимальный размер шага??
-{
-	double mod;
-
-	mod = fabs(startNum - endNum) / step;
-
-	if (isInteger(mod))
-		return (1);
-	return (0);
-}*/ //!!НЕ РАБОТАЕТ! ХЗ ПОЧЕМУ! Ответ: проблема с представлением десятичных дробей в двоичном формате.
 
 int isDoubleInt(double num)
 {
@@ -211,7 +207,6 @@ void printResultHeader()
 	cout << "|Y(x) - S(x)|  |  ";
 	cout << "S(x) Iterations count";
 	cout << endl << "=====================================================================" << endl;
-	//cout << "---------------------------------------------------------------------" << endl;
 }
 
 void printResult(int i, double x, double y, double eps, int count)
@@ -224,43 +219,45 @@ void printResult(int i, double x, double y, double eps, int count)
 	cout << endl << "---------------------------------------------------------------------" << endl;
 }
 
-int main()
+
+/*ПРОБЛЕМЫ ИЛИ ЗАМЕНЕНЫ*/
+
+/*int isInteger(double value) //!Проверка дабла на целочисленность. fmod не работает.
 {
-	double x; // x
-	double y; // y
-	double startNum; // a (ПОЛУЧАЕМ ИЗ КОНСОЛИ)
-	double endNum; // b (ПОЛУЧАЕМ ИЗ КОНСОЛИ)
-	double step; // h (ПОЛУЧАЕМ ИЗ КОНСОЛИ)
-	double epsilon; // |Y(x) - S(x)|
-	double iteration;
+	int temp1 = value;
+	double temp2 = value - temp1;
+	temp1 = value;
+	temp2 = value - temp1;
+	if (temp2 == 0)
+		return (0);
+	return (1);
+}
 
-	iteration = 0;
-	step = 0;
+int stepSize_check(double step, double startNum, double endNum) 
+{
+	double mod;
 
-	cout << "Enter starting value: " << endl;
-	startNum = digit_input();
-	cout << "Enter final value: " << endl;
-	endNum = digit_input();
+	mod = fabs(startNum - endNum) / step;
 
-	if (startNum != endNum) { // Если начало и конец равны, то шаг не нужен. Будет всего одна основная итерация
-		do {
-			cout << "Enter step size: " << endl;
-			step = fabs(digit_input()) * stepMode(startNum, endNum);
-		} while (step_check(step, startNum, endNum));
+	if (isInteger(mod))
+		return (1);
+	return (0);
+}*/ //!!НЕ РАБОТАЕТ! Ответ: проблема с представлением десятичных дробей в двоичном формате.
+
+/* //! Работает, заменен на рекурсивный
+double factorial(double arg)
+{
+	if (arg == 0)
+		return (1);
+
+	double result;
+
+	result = arg;
+
+	while (arg > 1) {
+		result *= --arg;
 	}
 
-	printResultHeader();
-
-	do {
-		iteration_counter(0);
-		x = func_sum(startNum);
-		y = func_yx(startNum);
-		epsilon = fabs(y - x);
-		startNum += step;
-
-		printResult((++iteration), x, y, epsilon, *iteration_counter(2));
-
-	} while (fabs(startNum - endNum - step) > 0.000000000001);
-
-	return (0);
+	return (result);
 }
+*/
